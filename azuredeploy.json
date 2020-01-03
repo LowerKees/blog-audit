@@ -34,8 +34,8 @@
             },
             "resources": [
                 {
-                    "name": "[concat(parameters('serverName'), '/', parameters('databaseName'))]",
-                    "type": "Microsoft.Sql/servers/databases",
+                    "name": "[parameters('databaseName')]",
+                    "type": "databases",
                     "apiVersion": "2017-10-01-preview",
                     "location": "[resourceGroup().location]",
                     "sku": {
@@ -47,6 +47,36 @@
                     },
                     "dependsOn": [
                         "[parameters('serverName')]"
+                    ]
+                },
+                {
+                    "name": "master/microsoft.insights/security",
+                    "type": "databases/providers/diagnosticSettings",
+                    "apiVersion": "2017-05-01-preview",
+                    "properties": {
+                        "workspaceId": "[resourceId(resourceGroup().name, 'Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]",
+                        "logs": [
+                            {
+                                "category": "SQLSecurityAuditEvents",
+                                "enabled": true
+                            }
+                        ]
+                    },
+                    "dependsOn": [
+                        "[concat('Microsoft.Sql/servers/', parameters('serverName'), '/databases/', parameters('databaseName'))]",
+                        "[concat('Microsoft.Sql/servers/', parameters('serverName'))]"
+                    ]
+                },
+                {
+                    "apiVersion": "2017-03-01-preview",
+                    "type": "auditingSettings",
+                    "name": "DefaultAuditingSettings",
+                    "properties": {
+                        "State": "Enabled",
+                        "isAzureMonitorTargetEnabled": true
+                    },
+                    "dependsOn": [
+                        "[resourceId('Microsoft.Sql/servers/', parameters('serverName'))]"
                     ]
                 }
             ]
