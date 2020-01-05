@@ -47,7 +47,22 @@
                     },
                     "dependsOn": [
                         "[parameters('serverName')]"
+                    ],
+                    "resources": [
+                        {
+                            "name": "audit",
+                            "apiVersion": "2017-03-01-preview",
+                            "type": "auditingSettings",
+                            "dependsOn": [
+                                "[parameters('databaseName')]"
+                            ],
+                            "properties": {
+                                "State": "Enabled",
+                                "isAzureMonitorTargetEnabled": true
+                            }
+                        }
                     ]
+
                 },
                 {
                     "name": "master/microsoft.insights/security",
@@ -67,6 +82,25 @@
                         "[concat('Microsoft.Sql/servers/', parameters('serverName'))]"
                     ]
                 },
+                {
+                    "name": "[concat(parameters('databaseName'), '/microsoft.insights/security')]",
+                    "type": "databases/providers/diagnosticSettings",
+                    "apiVersion": "2017-05-01-preview",
+                    "properties": {
+                        "workspaceId": "[resourceId(resourceGroup().name, 'Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]",
+                        "logs": [
+                            {
+                                "category": "SQLSecurityAuditEvents",
+                                "enabled": true
+                            }
+                        ]
+                    },
+                    "dependsOn": [
+                        "[concat('Microsoft.Sql/servers/', parameters('serverName'), '/databases/', parameters('databaseName'))]",
+                        "[concat('Microsoft.Sql/servers/', parameters('serverName'))]"
+                    ]
+                },
+
                 {
                     "apiVersion": "2017-03-01-preview",
                     "type": "auditingSettings",
