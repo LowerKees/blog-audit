@@ -1,0 +1,18 @@
+// Trend analysis
+AzureDiagnostics
+| where TimeGenerated >= ago(7d)
+| where action_name_s == 'RESET PASSWORD' // Only works if you deploy the "USER_CHANGE_PASSWORD_GROUP" auditActionsAndGroups
+| summarize password_resets = count() by five_minute_intervals = bin(TimeGenerated, 5m), server_principal_name_s
+| render barchart
+
+// Zooming into malicious events
+AzureDiagnostics
+| where action_name_s == 'RESET PASSWORD'
+| where server_principal_name_s != 'nimda'
+| where TimeGenerated between(datetime("2020-03-22 13:10") .. datetime("2020-03-22 13:15"))
+
+// Query for alerting
+AzureDiagnostics
+| where action_name_s == 'RESET PASSWORD'
+| where server_principal_name_s != 'nimda'
+| where TimeGenerated >= ago(1h)
