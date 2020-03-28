@@ -47,8 +47,43 @@
                     },
                     "dependsOn": [
                         "[parameters('serverName')]"
+                    ],
+                    "resources": [
+                        {
+                            "type": "auditingSettings",
+                            "name": "default",
+                            "apiVersion": "2017-03-01-preview",
+                            "properties": {
+                                "state": "enabled",
+                                "isAzureMonitorTargetEnabled": true,
+                                "auditActionsAndGroups": [
+                                    "USER_CHANGE_PASSWORD_GROUP"
+                                ]
+                            },
+                            "dependsOn": [
+                                "[parameters('databaseName')]"
+                            ]
+                        }
                     ]
-                }
+                },
+                {
+                    "name": "[concat(parameters('databaseName'), '/microsoft.insights/security')]",
+                    "type": "databases/providers/diagnosticSettings",
+                    "apiVersion": "2017-05-01-preview",
+                    "properties": {
+                        "workspaceId": "[resourceId(resourceGroup().name, 'Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]",
+                        "logs": [
+                            {
+                                "category": "SQLSecurityAuditEvents",
+                                "enabled": true
+                            }
+                        ]
+                    },
+                    "dependsOn": [
+                        "[concat('Microsoft.Sql/servers/', parameters('serverName'), '/databases/', parameters('databaseName'))]",
+                        "[concat('Microsoft.Sql/servers/', parameters('serverName'))]"
+                    ]
+                },
             ]
         },
         {

@@ -20,6 +20,14 @@
         "workspaceName": {
             "type": "string",
             "defaultValue": "audit-la01"
+        },
+        "actionGroupName": {
+            "defaultValue": "database-operators",
+            "type": "String"
+        },
+        "scheduledQueryRuleName": {
+            "defaultValue": "Passwords are changed by unprivileged account",
+            "type": "String"
         }
     },
     "resources": [
@@ -55,7 +63,10 @@
                             "apiVersion": "2017-03-01-preview",
                             "properties": {
                                 "state": "enabled",
-                                "isAzureMonitorTargetEnabled": true
+                                "isAzureMonitorTargetEnabled": true,
+                                "auditActionsAndGroups": [
+                                    "USER_CHANGE_PASSWORD_GROUP"
+                                ]
                             },
                             "dependsOn": [
                                 "[parameters('databaseName')]"
@@ -93,6 +104,58 @@
                     "name": "pergb2018"
                 },
                 "retentionInDays": 90
+            }
+        },
+        {
+            "type": "Microsoft.Insights/actionGroups",
+            "name": "[parameters('actionGroupName')]",
+            "apiVersion": "2019-03-01",
+            "location": "Global",
+            "properties": {
+                "groupShortName": "db-ops",
+                "enabled": true,
+                "emailReceivers": [
+                    {
+                        "name": "email-db-ops",
+                        "emailAddress": "martijn.beenker@avanade.com"
+                    }
+                ]
+            }
+        },
+        {
+            "type": "Microsoft.Insights/scheduledqueryrules",
+            "name": "[parameters('scheduledQueryRuleName')]",
+            "apiVersion": "2018-04-16",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]",
+                "[resourceId('Microsoft.Insights/actionGroups', parameters('actionGroupName'))]"
+            ],
+            "properties": {
+                "enabled": "true",
+                "source": {
+                    "query": "AzureDiagnostics\n| where action_name_s == 'RESET PASSWORD'\n| where server_principal_name_s != 'nimda'\n| where statement_s startswith \"ALTER USER\"\n| where TimeGenerated > ago(1h)\n",
+                    "authorizedResources": [],
+                    "dataSourceId": "[resourceId('Microsoft.OperationalInsights/workspaces', parameters('workspaceName'))]",
+                    "queryType": "ResultCount"
+                },
+                "schedule": {
+                    "frequencyInMinutes": 60,
+                    "timeWindowInMinutes": 60
+                },
+                "action": {
+                    "severity": "2",
+                    "aznsAction": {
+                        "actionGroup": [
+                            "[resourceId('microsoft.insights/actionGroups', parameters('actionGroupName'))]"
+                        ]
+                    },
+                    "trigger": {
+                        "thresholdOperator": "GreaterThan",
+                        "threshold": 0
+                    },
+                    "odata.type": "Microsoft.WindowsAzure.Management.Monitoring.Alerts.Models.Microsoft.AppInsights.Nexus.DataContracts.Resources.ScheduledQueryRules.AlertingAction"
+                }
             }
         }
     ]
