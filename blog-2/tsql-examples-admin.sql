@@ -22,6 +22,7 @@ GRANT INSERT ON SCHEMA::dbo TO TEST_USER_01;
 
 ALTER USER TEST_USER_01 WITH PASSWORD = 'C0mpl3xP@sswordsSh0uldBeC0mpl3X!'
 
+/* Creating some BATCH_COMPLETED_GROUP auditing events */
 IF OBJECT_ID('dbo.TestTable') IS NULL
 	BEGIN
 		CREATE TABLE dbo.TestTable (
