@@ -19,7 +19,7 @@
         },
         "workspaceName": {
             "type": "string",
-            "defaultValue": "audit-la01"
+            "defaultValue": "audit-la001"
         }
     },
     "resources": [
