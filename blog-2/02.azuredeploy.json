@@ -4,7 +4,7 @@
     "parameters": {
         "serverName": {
             "type": "string",
-            "defaultValue": "audit-sv01"
+            "defaultValue": "[concat('audit-sv-', substring(uniqueString(utcNow()),0,4))]"
         },
         "adminUsername": {
             "type": "string",
@@ -15,19 +15,23 @@
         },
         "databaseName": {
             "type": "string",
-            "defaultValue": "audit-db01"
+            "defaultValue": "audit-db-01"
         },
         "workspaceName": {
             "type": "string",
-            "defaultValue": "audit-la01"
+            "defaultValue": "[concat('audit-la-', substring(uniqueString(utcNow()),0,4))]"
         },
         "actionGroupName": {
             "defaultValue": "database-operators",
-            "type": "String"
+            "type": "string"
         },
         "scheduledQueryRuleName": {
             "defaultValue": "Passwords are changed by unprivileged account",
-            "type": "String"
+            "type": "string"
+        },
+        "emailReceiver": {
+            "defaultValue": "someone@example.com",
+            "type": "string"
         }
     },
     "resources": [
@@ -65,7 +69,9 @@
                                 "state": "enabled",
                                 "isAzureMonitorTargetEnabled": true,
                                 "auditActionsAndGroups": [
-                                    "USER_CHANGE_PASSWORD_GROUP"
+                                    "USER_CHANGE_PASSWORD_GROUP",
+                                    "SUCCESSFUL_DATABASE_AUTHENTICATION_GROUP",
+                                    "FAILED_DATABASE_AUTHENTICATION_GROUP"                                    
                                 ]
                             },
                             "dependsOn": [
@@ -117,7 +123,7 @@
                 "emailReceivers": [
                     {
                         "name": "email-db-ops",
-                        "emailAddress": "martijn.beenker@avanade.com"
+                        "emailAddress": "[parameters('emailReceiver')]"
                     }
                 ]
             }
