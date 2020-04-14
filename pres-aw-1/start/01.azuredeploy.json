@@ -1,0 +1,67 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "serverName": {
+            "type": "string",
+            "defaultValue": "[concat('audit-sv-', substring(uniqueString(utcNow()),0,4))]"
+        },
+        "adminUsername": {
+            "type": "string",
+            "defaultValue": "nimda"
+        },
+        "adminPassword": {
+            "type": "securestring"
+        },
+        "databaseName": {
+            "type": "string",
+            "defaultValue": "audit-db-01"
+        },
+        "workspaceName": {
+            "type": "string",
+            "defaultValue": "[concat('audit-la-', substring(uniqueString(utcNow()),0,4))]"
+        },
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Sql/servers",
+            "name": "[parameters('serverName')]",
+            "apiVersion": "2015-05-01-preview",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "administratorLogin": "[parameters('adminUsername')]",
+                "administratorLoginPassword": "[parameters('adminPassword')]"
+            },
+            "resources": [
+                {
+                    "type": "databases",
+                    "name": "[parameters('databaseName')]",
+                    "apiVersion": "2017-10-01-preview",
+                    "location": "[resourceGroup().location]",
+                    "sku": {
+                        "name": "Basic",
+                        "tier": "Basic"
+                    },
+                    "properties": {
+                        "collation": "SQL_Latin1_General_CP1_CI_AS"
+                    },
+                    "dependsOn": [
+                        "[parameters('serverName')]"
+                    ]
+                }
+            ]
+        },
+        {
+            "type": "Microsoft.OperationalInsights/workspaces",
+            "name": "[parameters('workspaceName')]",
+            "apiVersion": "2015-11-01-preview",
+            "location": "[resourceGroup().location]",
+            "properties": {
+                "sku": {
+                    "name": "pergb2018"
+                },
+                "retentionInDays": 90
+            }
+        }
+    ]
+}
