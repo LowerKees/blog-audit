@@ -20,7 +20,7 @@
         "workspaceName": {
             "type": "string",
             "defaultValue": "[concat('audit-la-', substring(uniqueString(utcNow()),0,4))]"
-        },
+        }
     },
     "resources": [
         {
@@ -85,7 +85,7 @@
                         "[concat('Microsoft.Sql/servers/', parameters('serverName'), '/databases/', parameters('databaseName'))]",
                         "[concat('Microsoft.Sql/servers/', parameters('serverName'))]"
                     ]
-                },
+                }
             ]
         },
         {

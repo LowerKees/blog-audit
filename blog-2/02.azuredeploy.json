@@ -97,7 +97,7 @@
                         "[concat('Microsoft.Sql/servers/', parameters('serverName'), '/databases/', parameters('databaseName'))]",
                         "[concat('Microsoft.Sql/servers/', parameters('serverName'))]"
                     ]
-                },
+                }
             ]
         },
         {
